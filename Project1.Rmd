@@ -66,6 +66,7 @@ videogames <- filter(videogames, Year != "N/A")
 
 #age
 videogames$Age <-  2025 - as.numeric(videogames$Year)
+
 #company origin
 videogames$CompanyOrigin[videogames$Publisher == 'Ubisoft'] <- "France"
 videogames$CompanyOrigin[videogames$Publisher == 'Sony Computer Entertainment'] <- "Japan"
@@ -96,6 +97,8 @@ kable(variable_information)
 
 #graphing VG platforms as a bar graph
 ggplot(videogames) + geom_bar(aes(x = videogames$Platform), fill = 'lightblue') + labs( title = "The Count of Videogame Platforms", x = "Platform")
+
+#prints frequency of values in graph
 table(videogames$Platform)
 ```
 
@@ -106,6 +109,8 @@ There are 118 PC games, 1106 PlayStation games, 117 Wii games, and 254 Xbox game
 ```{r echo=FALSE}
 #graphing VG publishers as a bar graph 
 ggplot(videogames) + geom_bar(aes(y = Publisher),fill = 'lightpink')+ labs( title = "The Count of Videogame Publishers", x = "Frequency")
+
+#prints frequency of values in graph
 table(videogames$Publisher)
 
 ```
@@ -132,6 +137,7 @@ The median age for video games is `r age_med` and the IQR is `r age_IQR`.
 #graphing VG Company Country Origin as a bar graph
 ggplot(videogames) + geom_bar(aes(x = videogames$CompanyOrigin),fill = 'lightblue')+ labs( title = "The Count of Company Country Origin", x = "Country")
 
+#prints frequency of values in graph
 table(videogames$CompanyOrigin)
 
 ```
@@ -144,6 +150,7 @@ The company that originated in France has 281 games, while the Japanese companie
 #graphing VG genre as a bar graph
 ggplot(videogames) + geom_bar(aes(x = videogames$Genre),fill = 'lightpink')+ labs( title = "The Count of Videogame Genre", x = "Genre")
 
+#prints frequency of values in graph
 table(videogames$Genre)
 ```
 
