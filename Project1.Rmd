@@ -1,0 +1,224 @@
+---
+title: "Project 1"
+author: "Molly Sledz"
+date: "2025-10-10"
+output: 
+  html_document:
+    toc: true 
+    toc_float: true
+---
+
+```{css, echo = FALSE}
+body {
+  font-family: "Times New Roman", serif;     
+  font-size: 14px;                   
+  color: #20248A; 
+  /*I used Google Gemini to help me learn how to embed css code chunks into my rmd file and how to change the font options. */
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+```
+
+## Introduction
+
+This is a data set over the various game rankings for PlayStation, Xbox, Wii, and PC with sales over 100,000 copies. I have constrained the variable options for the categorical values, so there are only 4 genres and 4 publishers. I chose these 4 options based on the amount of observations linked to each one so I chose the 4 most popular options in the entire data set. I used Zenodo which got the data off of vgchartz.com, a website that tracks various trends and information about video games. This data was collected from vgchartz.com website in 2022. Link: <https://zenodo.org/records/5898311>
+
+I'd like to answer "how big of a different are the sales in games for European gamers compared to North American gamers?" as well as "Which publisher has taken over many of the gaming platforms?".
+
+![Wii Sports from Wikipedia (<https://en.wikipedia.org/wiki/Wii_Sports>)](Wii_Sports_Europe.jpg)
+
+## Data Preparation
+
+```{r echo = FALSE, results = 'hide'}
+
+#I used Sage AI for show_col_types = FALSE so that the warning message wouldn't show.
+
+#importing the data set
+videogames <- read_csv('vgsales.csv',show_col_types = FALSE)
+
+#changing all the subtitles of different game platforms to the general platform
+videogames$Platform[videogames$Platform == 'PS1'] <- 'PS'
+videogames$Platform[videogames$Platform == 'PS2'] <- 'PS'
+videogames$Platform[videogames$Platform == 'PS3'] <- 'PS'
+videogames$Platform[videogames$Platform == 'PS4'] <- 'PS'
+videogames$Platform[videogames$Platform == 'PSP'] <- 'PS'
+videogames$Platform[videogames$Platform == 'PSV'] <- 'PS'
+videogames$Platform[videogames$Platform == 'X360'] <- 'XBOX'
+videogames$Platform[videogames$Platform == 'XOne'] <- 'XBOX'
+videogames$Platform[videogames$Platform == 'WiiU'] <- 'Wii'
+
+
+#filtering the genres so that there are only 4 options 
+videogames <- filter(videogames, videogames$Genre == 'Action'|videogames$Genre == 'Sports'|videogames$Genre == 'Role-Playing'|videogames$Genre == 'Shooter')
+
+videogames <- filter(videogames, videogames$Platform == 'PS'| videogames$Platform == 'XBOX'| videogames$Platform == 'PC'| videogames$Platform == 'Wii')
+
+videogames <- filter(videogames, videogames$Publisher == 'Ubisoft'| videogames$Publisher == 'Sony Computer Entertainment'| videogames$Publisher == 'Konami Digital Entertainment'| videogames$Publisher == 'Electronic Arts')
+
+#removes N/A values
+videogames <- filter(videogames, Year != "N/A")
+
+#new variables 
+
+#age
+videogames$Age <-  2025 - as.numeric(videogames$Year)
+#company origin
+videogames$CompanyOrigin[videogames$Publisher == 'Ubisoft'] <- "France"
+videogames$CompanyOrigin[videogames$Publisher == 'Sony Computer Entertainment'] <- "Japan"
+videogames$CompanyOrigin[videogames$Publisher == 'Konami Digital Entertainment'] <- "Japan"
+videogames$CompanyOrigin[videogames$Publisher == 'Electronic Arts'] <- "United States"
+```
+
+The website Zenodo scraped the data from vgchartz.com and put it in a csv file so I was able to quickly import it into RStudio. One of the challenges I faced was that many of the categorical variables had 10+ options so I used a table to find the most popular options and used the top 4. After all the filtering to meet the requirements, the data observations went from 20k+ to 1600.
+
+## Variable Descriptions
+
+```{r echo = FALSE}
+
+#manually put all variable information into tibble 
+variable_information <- tibble( 
+  Name = c("Rank", "Name", "Platform","Year", "Genre","Publisher", "NA_Sales", "EU_Sales", "JP_Sales","Other_Sales","Global_Sales","Age","CompanyOrigin"), Type = c('double','character','character','character','character','character','double','double','double','double','double','double','character'), Discription = c('Ranking of overall sales','The games name','Platform of the games release','Year of the game\'s release','Genre of the game','Publisher of the game','Sales in North America (in millions)','Sales in Europe (in millions)','Sales in Japan (in millions)','Sales in the rest of the world (in millions)','Total worldwide sales(in millions)','How old the game is in 2025','Company Origin'))
+
+#formats the variable information into a nice table
+kable(variable_information)
+
+```
+
+## Univariate Analyses:
+
+### The Count of Video Game Platforms
+
+```{r echo=FALSE}
+
+#graphing VG platforms as a bar graph
+ggplot(videogames) + geom_bar(aes(x = videogames$Platform), fill = 'lightblue') + labs( title = "The Count of Videogame Platforms", x = "Platform")
+table(videogames$Platform)
+```
+
+There are 118 PC games, 1106 PlayStation games, 117 Wii games, and 254 Xbox games in this data set.
+
+### The Count of Video Game Publishers
+
+```{r echo=FALSE}
+#graphing VG publishers as a bar graph 
+ggplot(videogames) + geom_bar(aes(y = Publisher),fill = 'lightpink')+ labs( title = "The Count of Videogame Publishers", x = "Frequency")
+table(videogames$Publisher)
+
+```
+
+There are 671 Electronic Arts games, 313 Sony Computer Entertainment games, 330 Konami Digital Entertainment games, and 281 Ubisoft games.
+
+### The Count of Video Game Ages
+
+```{r echo=FALSE}
+#graphing VG age as a histogram
+ggplot(videogames) + geom_histogram(aes(x = videogames$Age),binwidth = 1, fill = 'lightgreen') + labs( title = "The Count of Videogame Ages", x = "Age")
+
+#descriptive stats for VG age graph
+age_med <- median(videogames$Age, na.rm = TRUE)
+age_IQR <- IQR(videogames$Age, na.rm = TRUE)
+
+```
+
+The median age for video games is `r age_med` and the IQR is `r age_IQR`.
+
+### The Count of Company Country Origin
+
+```{r echo=FALSE}
+#graphing VG Company Country Origin as a bar graph
+ggplot(videogames) + geom_bar(aes(x = videogames$CompanyOrigin),fill = 'lightblue')+ labs( title = "The Count of Company Country Origin", x = "Country")
+
+table(videogames$CompanyOrigin)
+
+```
+
+The company that originated in France has 281 games, while the Japanese companies have 643 games, and the US companies have 641 games.
+
+### The Count of Video Game Genre
+
+```{r echo=FALSE}
+#graphing VG genre as a bar graph
+ggplot(videogames) + geom_bar(aes(x = videogames$Genre),fill = 'lightpink')+ labs( title = "The Count of Videogame Genre", x = "Genre")
+
+table(videogames$Genre)
+```
+
+In this data set, there are 457 action games, 127 role-playing games, 249 shooter games, and 762 sports games.
+
+## Bivariate Analyses:
+
+### European Sales of Games Versus North American Sales
+
+```{r echo=FALSE}
+
+#graph for European Sales & North America Sales 
+ggplot(videogames) + geom_point(aes(x = videogames$EU_Sales, y = videogames$NA_Sales, color = Platform))+ labs( title = "European Sales of Games Versus North American Sales", x = "European Sales (in millions)", y = "North American Sales (in millions)") + theme_classic()
+
+#Descriptive stats for graph above 
+cor_EUNAsales <- round(cor(videogames$NA_Sales,videogames$EU_Sales),2)
+
+```
+
+The graph of European Sales versus North American Sales of video games has a moderate positive correlation and an correlation coefficient of `r cor_EUNAsales`. As the European sales increase, the American sales also increase.
+
+### Rank Versus Global Sales
+
+```{r echo=FALSE}
+#graph for Rank vs Global Sales
+ggplot(videogames) + geom_point(aes(x = videogames$Rank, y = videogames$Global_Sales)) + labs( title = "Rank Versus Global Sales", x = "Rank",y = "Global Sales (in millions)") + theme_classic()
+
+#Descriptive stats for graph above
+cor_globsale_rank <- round(cor(videogames$Global_Sales,videogames$Rank),2)
+
+```
+
+The graph of Rank versus Global Sales of video games has a moderate negative correlation and an correlation coefficient of `r cor_globsale_rank`. As the European sales increase, the American sales also increase.
+
+### Age Versus Global Sales
+
+```{r echo=FALSE}
+#scatterplot for age versus global sales 
+ggplot(videogames) + geom_point(aes(x = videogames$Age, y = videogames$Global_Sales)) + labs( title = "Age Versus Global Sales", x = "Age",y = "Global Sales (in millions)") + theme_classic()
+
+#Descriptive stats for graph above
+cor_yearglobsale <- round(cor(as.numeric(videogames$Year), videogames$Global_Sales),2)
+
+```
+
+The graph of Age versus Global Sales of video games has a very weak postive correlation and an correlation coefficient of `r cor_yearglobsale`. As the age increases, the global sales increase.
+
+### Publisher by Platform
+
+```{r echo=FALSE}
+ 
+#multivariable bar graph for publishers by platform
+ ggplot(videogames) + geom_bar(aes(x = videogames$Platform, fill = Publisher)) + labs( title = "Publisher by Platform", x = "Platform") + theme_classic()
+ 
+ table(videogames$Platform, videogames$Publisher)
+ #I learned that you can have multiple parameter for the table function through Sage AI.
+
+```
+
+Electronic Arts (EA), Sony Computer Entertainment, Konami Digital Entertainment, and Ubisoft have the most games on PlayStation. Sony only has games on the PlayStation while EA has over 150 games on Xbox.
+
+## Choice Elements:
+
+I created two new variables (age and company origin) by subtracting the year it was released to 2025 as well as googling the company origin of the publishers. I also parsed the string variable Year into a number for the age variable. I added a floating table of contents to the top left. I also added 5 or more in-line codes in my report as the descriptions of the graphs have a in line numeric values. I made the graph section titles smaller than the main section titles so that on the table of contents, it allows user to go to the main section and the subsections. I have changed the font style, size, and color.
+
+## Conclusion:
+
+Answering my 1st research question, there isn't too large of a different because as European gamers buy games, North American gamers are also buying games. For my second question, EA has the most games on PlayStation but Sony only has games on PlayStation. EA has the most games on all platforms. I have also noticed that the genre with the most games is sports games while the genre with the least is role-playing games. The median age for a video game in the data set is 17 years with an IQR of 7 years. One future area of research could be finding player counts within the first year because many games could have high sales but differing player counts or average player game time.
+
+## References:
+
+Zenodo.org for data scraping
+
+vgchartz.com for the data collection
+
+Google Gemini (<https://gemini.google.com>) for explanation of font options using a CSS code chuck
+
+Sage AI (<https://sage.eta.its.utexas.edu/>) for show_col_types = FALSE so that the warning message wouldn't show
