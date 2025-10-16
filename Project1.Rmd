@@ -29,7 +29,9 @@ This is a data set over the various game rankings for PlayStation, Xbox, Wii, an
 
 I'd like to answer "how big of a different are the sales in games for European gamers compared to North American gamers?" as well as "Which publisher has taken over many of the gaming platforms?".
 
-![Wii Sports from Wikipedia (<https://en.wikipedia.org/wiki/Wii_Sports>)](Wii_Sports_Europe.jpg)
+```{r Wii Sports. Image, echo = FALSE, fig.align = 'center', out.width = "50%", fig.cap = "Wii Sports - Wikipedia"}
+knitr::include_graphics("Wii_Sports_Europe.jpg")
+```
 
 ## Data Preparation
 
@@ -229,3 +231,4 @@ vgchartz.com for the data collection
 Google Gemini (<https://gemini.google.com>) for explanation of font options using a CSS code chuck
 
 Sage AI (<https://sage.eta.its.utexas.edu/>) for show_col_types = FALSE so that the warning message wouldn't show
+
